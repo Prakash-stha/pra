@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Apple of Fortune - Demo</title>
+  <style>
+    body {
+      font-family: sans-serif;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 20px;
+      background: #121212;
+      color: white;
+    }
+    table {
+      border-collapse: collapse;
+      margin-top: 20px;
+    }
+    td {
+      width: 60px;
+      height: 60px;
+      border: 1px solid #444;
+      text-align: center;
+      font-size: 24px;
+      cursor: pointer;
+      background-color: #222;
+      position: relative;
+    }
+    td.hidden {
+      background-color: #222;
+      color: #222;
+    }
+    td.bomb {
+      background-color: red;
+    }
+    td.apple {
+      background-color: green;
+    }
+    .cheat-hint {
+      position: absolute;
+      bottom: 2px;
+      right: 4px;
+      font-size: 12px;
+      color: rgba(255, 255, 255, 0.4);
+      display: none;
+    }
+    .show-cheat .cheat-hint {
+      display: block;
+    }
+    button {
+      margin-top: 20px;
+      padding: 10px 20px;
+      font-size: 16px;
+      cursor: pointer;
+    }
+    #coinDisplay {
+      font-size: 20px;
+      margin-top: 10px;
+      color: gold;
+    }
+  </style>
+</head>
+<body>
+  <h1>🍏 Apple of Fortune - DEMO</h1>
+  <p>Click on any tile to try your luck. One apple per row!</p>
+  <div id="coinDisplay">💰 Coins: 0</div>
+  <table id="gameBoard"></table>
+  <button onclick="revealAll()">🔓 Simulate Extension (Reveal All)</button>
+  <button onclick="toggleCheat()">🕵️ Toggle Cheat Mode</button>
+
+  <script>
+    const rows = 10;
+    const cols = 5;
+    const board = [];
+    const table = document.getElementById("gameBoard");
+    const coinDisplay = document.getElementById("coinDisplay");
+    let coins = 0;
+
+    // Pre-generate the apple path
+    for (let r = 0; r < rows; r++) {
+      const appleCol = Math.floor(Math.random() * cols);
+      const row = [];
+      for (let c = 0; c < cols; c++) {
+        row.push(c === appleCol ? "🍏" : "💣");
+      }
+      board.push(row);
+    }
+
+    // Render table with hidden values
+    for (let r = 0; r < rows; r++) {
+      const tr = document.createElement("tr");
+      for (let c = 0; c < cols; c++) {
+        const td = document.createElement("td");
+        td.classList.add("hidden");
+        td.dataset.row = r;
+        td.dataset.col = c;
+        td.onclick = () => handleClick(td);
+
+        // Add transparent cheat overlay
+        const cheatHint = document.createElement("div");
+        cheatHint.className = "cheat-hint";
+        cheatHint.textContent = board[r][c];
+        td.appendChild(cheatHint);
+
+        tr.appendChild(td);
+      }
+      table.appendChild(tr);
+    }
+
+    let currentRow = 0;
+    function handleClick(cell) {
+      const row = +cell.dataset.row;
+      const col = +cell.dataset.col;
+      if (row !== currentRow) return;
+      const value = board[row][col];
+      cell.textContent = value;
+      cell.classList.remove("hidden");
+      cell.classList.add(value === "🍏" ? "apple" : "bomb");
+      if (value === "🍏") {
+        coins += 10;
+        updateCoins();
+        currentRow++;
+        if (currentRow >= rows) alert("🎉 You win the game!");
+      } else {
+        alert("💥 Boom! Game over.");
+        coins = 0;
+        updateCoins();
+        disableBoard();
+      }
+    }
+
+    function revealAll() {
+      for (let r = 0; r < rows; r++) {
+        for (let c = 0; c < cols; c++) {
+          const cell = table.rows[r].cells[c];
+          const val = board[r][c];
+          cell.textContent = val;
+          cell.classList.remove("hidden");
+          cell.classList.add(val === "🍏" ? "apple" : "bomb");
+        }
+      }
+    }
+
+    function toggleCheat() {
+      table.classList.toggle("show-cheat");
+    }
+
+    function updateCoins() {
+      coinDisplay.textContent = `💰 Coins: ${coins}`;
+    }
+
+    function disableBoard() {
+      for (let r = 0; r < rows; r++) {
+        for (let c = 0; c < cols; c++) {
+          table.rows[r].cells[c].onclick = null;
+        }
+      }
+    }
+  </script>
+</body>
+</html>
